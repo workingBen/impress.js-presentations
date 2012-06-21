@@ -1,0 +1,186 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Rapid Mobile Development for Web Engineers</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">	
+		<link href="styles.css" rel="stylesheet" />
+	</head>
+	<body>
+		<div id="impress">
+      <div class="no-support-message">
+        <h1>Awwww... So sad.</h1>
+				Your browser doesn't support impress.js.  Try Chrome or Safari.
+			</div>
+			
+      <div class="step" data-x="0" data-y="0">
+        <div class="box">
+          <h1>What's the deal, man?</h1>
+          <p>I spent 5 years doing native mobile development. I worked on Android and iOS since v1, and J2ME/Brew before then. That world sucks. Webapps are great.</p>
+          <p>BUT Sir, I want to have my native-cake and eat it too!</p>
+          <p><i>Enter native webapps.</i></p>
+
+          <b>Why:</b></br>
+          <div style="text-align: left; padding-left: 40px;">
+            &#149; In an increasingly connected world, mobile is everything.</br>
+            &#149; Lots of platforms. Even more devices! Ewww... divergence.</br>
+            &#149; IDEs suck. Really.</br>
+            &#149; Compiling is for ninnies.</br>
+            &#149; Write once, run everywhere.</br>
+            &#149; Because we're freaking web developers, man!!</br>
+          </div></br>
+        </div>
+			</div>
+			
+      <div class="step" data-x="1600" data-y="0">
+        <div class="box" style="text-align: left">
+        <h1>Rails Way 1: respond_to</h1>
+        <pre><code>
+          config/routes.rb
+          resources:artists
+          
+          app/controllers/artists_controller.rb
+          class ArtistsController < ApplicationController
+            def index
+              @artists=…
+              #allkindsofstuffthatservesviews
+              respond_todo |format|
+                format.html { @artists } 
+                format.json { render json: @artists.as_json }
+              end
+            end
+          end
+
+          app/views/artists/index.json.erb
+          -@artists.each do |artist| {
+            'first_name':'<%=@artist.first_name.to_json%>',
+            'last_name':'<%=@artist.last_name.to_json%>'
+          }
+        </code></pre>
+        Where does the API start and end?
+        How are we going to build API v2 on top of v1, and support both?
+        Is API testing the same as controller testing? Hmm...
+      </div>
+			</div>
+			
+			<div class="step" data-x="1600" data-y="-2000">
+        <div class="box" style="text-align: left">
+          <h1>Rails Way 2: API Controllers</h1>
+          <pre><code>
+class ApiController < ApplicationController
+  self.responder = ActsAsApi::Responder
+  respond_to :json, :xml
+end
+
+class UsersController < ApiController
+
+  def show
+    @user = User.find(params[:id])
+    respond_with @user, :api_template => :name_only, :location => user_path(@user)
+  end
+
+  ...
+
+  def destroy
+    @user = User.find(params[:id])
+    respond_with(@user.destroy, :api_template => :name_only)
+  end
+end
+          </code></pre>
+        Depends on ActsAsApi::Responder for respond_with. More code. More routes. More controllers. More specs. Ouch.
+      </div>
+			</div>
+			
+			<div class="step" data-x="1600" data-y="-1600" data-scale="0.05">
+        <div class="box" style="text-align: left">
+          <h1>The Grape Way</h1>
+<pre><code>
+lib/api.rb
+
+class HbServer::API < Grape::API
+  format :json
+  version 'v1', using: :path
+
+  helpers do
+  end
+
+  resource :pictures do
+    get ':id' do
+      Picture.find(params[:id]).to_json
+    end
+
+    get ':id/tags' do
+      { tags: Picture.find(params[:id]).tags.to_json }
+    end
+  end
+end
+</pre></code>
+        </div>
+			</div>
+			
+			<div class="step" data-x="0" data-y="-1600" data-rotate="90">
+        <div class="box left">
+  <pre><code>
+  resource :users do
+    get do
+      User.all.to_json
+    end
+
+    get ':id' do
+      User.find(params[:id]).to_json
+    end
+    
+    resources ':id/pictures' do
+      get do
+        User.find(params[:id]).pictures.to_json
+      end
+    end
+
+    resources ':id/tags' do
+      get do
+        "#{params[:callback]}(#{User.find(params[:id]).tags.to_json});"
+      end
+    end
+  end
+  </pre></code>
+        </div>
+			</div>
+
+			<div class="step" data-x="-1000" data-y="-2400">
+        <div class="box">
+          <h1>How do I run it?</h1>
+          <div class="left">
+<pre><code>
+config.ru
+
+# This file is used by Rack-based servers to start the application.
+
+require ::File.expand_path('../config/environment',  __FILE__)
+require 'api.rb'
+run HbServer::API
+</pre></code></div>
+        </div>
+			</div>
+
+			<div class="step" data-x="3000" data-y="-1600" data-rotate-x="60" data-rotate-y="60" data-rotate-z="30">
+        <div class="box">
+          <h1>THINK GRAPE IS AWESOME YET!?</h1>
+        </div>
+			</div>
+			
+			<div class="step" data-x="-5200" data-y="-1600" data-rotate-x="30" data-rotate-y="-60" data-rotate-z="90" data-scale="4">
+        <div class="box">
+          <h1>Grape is FASTER too!</h1>
+          <p>
+          Grape averages 47.21 req/sec</br>
+          Rails 3 averages 31.41  req/sec
+          </p>
+          <img src="images/benchmark.png"/>
+
+          <p class="small">http://blog.solid1pxred.com/post/16487806979/building-an-api-rails-3-vs-grape</p>
+        </div>
+			</div>
+			
+		</div>
+		<script type="text/javascript" src="impress.js"></script>
+	</body>
+</html>
