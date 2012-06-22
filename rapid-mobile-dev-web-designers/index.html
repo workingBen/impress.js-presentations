@@ -14,172 +14,202 @@
 			
       <div class="step" data-x="0" data-y="0">
         <div class="box">
-          <h1>What's the deal, man?</h1>
-          <p>I spent 5 years doing native mobile development. I worked on Android and iOS since v1, and J2ME/Brew before then. That world sucks. Webapps are great.</p>
-          <p>BUT Sir, I want to have my native-cake and eat it too!</p>
-          <p><i>Enter native webapps.</i></p>
-
-          <b>Why:</b></br>
-          <div style="text-align: left; padding-left: 40px;">
-            &#149; In an increasingly connected world, mobile is everything.</br>
-            &#149; Lots of platforms. Even more devices! Ewww... divergence.</br>
-            &#149; IDEs suck. Really.</br>
-            &#149; Compiling is for ninnies.</br>
-            &#149; Write once, run everywhere.</br>
-            &#149; Because we're freaking web developers, man!!</br>
-          </div></br>
+          <h1>Too Lazy for Native: How We're Building Ravel</h1>
+          <p>I spent 5 years doing native mobile development. I worked on Android and iOS since v1, and J2ME/Brew before then.</p>
+          <p>That world's hard.</p>
         </div>
 			</div>
 			
       <div class="step" data-x="1600" data-y="0">
         <div class="box" style="text-align: left">
-        <h1>Rails Way 1: respond_to</h1>
-        <pre><code>
-          config/routes.rb
-          resources:artists
-          
-          app/controllers/artists_controller.rb
-          class ArtistsController < ApplicationController
-            def index
-              @artists=…
-              #allkindsofstuffthatservesviews
-              respond_todo |format|
-                format.html { @artists } 
-                format.json { render json: @artists.as_json }
-              end
-            end
-          end
-
-          app/views/artists/index.json.erb
-          -@artists.each do |artist| {
-            'first_name':'<%=@artist.first_name.to_json%>',
-            'last_name':'<%=@artist.last_name.to_json%>'
-          }
-        </code></pre>
-        Where does the API start and end?
-        How are we going to build API v2 on top of v1, and support both?
-        Is API testing the same as controller testing? Hmm...
-      </div>
+          <h2>BUT Sir, I want to have my native-cake and eat it too!</h2>
+        </div>
 			</div>
 			
 			<div class="step" data-x="1600" data-y="-2000">
-        <div class="box" style="text-align: left">
-          <h1>Rails Way 2: API Controllers</h1>
-          <pre><code>
-class ApiController < ApplicationController
-  self.responder = ActsAsApi::Responder
-  respond_to :json, :xml
-end
-
-class UsersController < ApiController
-
-  def show
-    @user = User.find(params[:id])
-    respond_with @user, :api_template => :name_only, :location => user_path(@user)
-  end
-
-  ...
-
-  def destroy
-    @user = User.find(params[:id])
-    respond_with(@user.destroy, :api_template => :name_only)
-  end
-end
-          </code></pre>
-        Depends on ActsAsApi::Responder for respond_with. More code. More routes. More controllers. More specs. Ouch.
-      </div>
+        <div class="box" style="text-align: center">
+          <h2><i>Enter native webapps.</i></h2>
+          <p>Why?</p>
+        </div>
 			</div>
 			
 			<div class="step" data-x="1600" data-y="-1600" data-scale="0.05">
         <div class="box" style="text-align: left">
-          <h1>The Grape Way</h1>
-<pre><code>
-lib/api.rb
-
-class HbServer::API < Grape::API
-  format :json
-  version 'v1', using: :path
-
-  helpers do
-  end
-
-  resource :pictures do
-    get ':id' do
-      Picture.find(params[:id]).to_json
-    end
-
-    get ':id/tags' do
-      { tags: Picture.find(params[:id]).tags.to_json }
-    end
-  end
-end
-</pre></code>
+          <div style="text-align: left; padding-left: 40px;">
+            <h1>Because we're lazy</h1>
+          </div></br>
         </div>
 			</div>
 			
 			<div class="step" data-x="0" data-y="-1600" data-rotate="90">
         <div class="box left">
-  <pre><code>
-  resource :users do
-    get do
-      User.all.to_json
-    end
-
-    get ':id' do
-      User.find(params[:id]).to_json
-    end
-    
-    resources ':id/pictures' do
-      get do
-        User.find(params[:id]).pictures.to_json
-      end
-    end
-
-    resources ':id/tags' do
-      get do
-        "#{params[:callback]}(#{User.find(params[:id]).tags.to_json});"
-      end
-    end
-  end
-  </pre></code>
+            <h1>Too lazy to compile</h1>
         </div>
 			</div>
 
 			<div class="step" data-x="-1000" data-y="-2400">
         <div class="box">
-          <h1>How do I run it?</h1>
-          <div class="left">
-<pre><code>
-config.ru
-
-# This file is used by Rack-based servers to start the application.
-
-require ::File.expand_path('../config/environment',  __FILE__)
-require 'api.rb'
-run HbServer::API
-</pre></code></div>
+          <h1>Too lazy to use IDEs</h1>
         </div>
 			</div>
 
 			<div class="step" data-x="3000" data-y="-1600" data-rotate-x="60" data-rotate-y="60" data-rotate-z="30">
         <div class="box">
-          <h1>THINK GRAPE IS AWESOME YET!?</h1>
+          <h1>Too Lazy to launch emulators</h1>
         </div>
 			</div>
 			
 			<div class="step" data-x="-5200" data-y="-1600" data-rotate-x="30" data-rotate-y="-60" data-rotate-z="90" data-scale="4">
         <div class="box">
-          <h1>Grape is FASTER too!</h1>
-          <p>
-          Grape averages 47.21 req/sec</br>
-          Rails 3 averages 31.41  req/sec
-          </p>
-          <img src="images/benchmark.png"/>
-
-          <p class="small">http://blog.solid1pxred.com/post/16487806979/building-an-api-rails-3-vs-grape</p>
+          <h1>Too lazy to write 'int' all the heck over</h1>
         </div>
-			</div>
-			
+      </div>
+
+			<div class="step" data-x="1200" data-y="-1600" data-rotate-x="30" data-rotate-y="-60" data-rotate-z="90" data-scale="4">
+        <div class="box">
+          <h1>Too lazy to support multiple app versions</h1>
+        </div>
+      </div>
+
+			<div class="step" data-x="2000" data-y="-3000" data-rotate-x="30" data-rotate-y="-60" data-rotate-z="90" data-scale="2">
+        <div class="box">
+          <h1>Too lazy to teach web developers new tricks</h1>
+        </div>
+      </div>
+
+			<div class="step" data-x="4000" data-y="-3000" data-rotate-x="30" data-rotate-y="-60" data-rotate-z="90">
+        <div class="box">
+          <h1>The Price of Lazy</h1>
+            &#149; No native look and feel</br>
+            &#149; Huge performance penalty</br>
+        </div>
+      </div>
+
+			<div class="step" data-x="-2000" data-y="-3000">
+        <div class="box">
+          <h1>Tech Stack</h1>
+          <h2>Client</h2>
+          <div style="text-align: left; padding-left: 120px;">
+            &#149; Trigger.io</br>
+            &#149; Backbone.js</br>
+            &#149; JQTouch + JQuery</br>
+            &#149; Cloudinary</br>
+            &#149; Parse</br>
+            &#149; Adobe Shadow</br>
+          </div></br>
+          <h2>Server</h2>
+          <div style="text-align: left; padding-left: 120px;">
+            &#149; Grape + ActiveRecord</br>
+            &#149; Omniscience / Omnipresence</br>
+            &#149; Foreman</br>
+            &#149; RSpec / Capybara / Jasmine / Jenkins</br>
+          </div></br>
+        </div>
+      </div>
+
+
+			<div class="step" data-x="10000" data-y="-4000" data-z="2000" data-rotate-x="30" data-rotate-y="60" data-rotate-z="-90" data-scale="10">
+        <div class="box">
+          <div style="background: rgba(0,0,0,.7); padding: 20px 0 20px 0;">
+            <img src="./images/trigger-io.png"/></div>
+            &#149; Native Bridge</br>
+            &#149; 5x faster than PhoneGap</br>
+            &#149; 2s builds</br>
+            &#149; On device js debugging w/ Catalyst</br>
+            &#149; Rad dudes. Seriously.</br>
+        </div>
+      </div>
+
+			<div class="step" data-x="-10000" data-y="-2000" data-z="2000" data-rotate-y="60" data-rotate-z="-90">
+        <div class="box">
+          <div style="background: rgba(255,255,255,.7); padding: 20px 0 20px 0;">
+            <img src="./images/backbone.png"/></div>
+            &#149; Webapp vs website</br>
+            &#149; Snappy interactions</br>
+            &#149; Update model, refresh.</br>
+            &#149; MVCish</br>
+        </div>
+      </div>
+
+			<div class="step" data-x="-10000" data-y="-600" data-z="2000" data-rotate-y="60" data-rotate-z="-90">
+        <div class="box">
+          <div style="background: rgba(0,0,0,.9); padding: 20px 0 20px 0;">
+            <img src="./images/jquery.png"/>
+            <img src="./images/JQTouch.jpg"/></div>
+            &#149; Yep, we use jquery too.</br>
+            &#149; JQTouch is great for prototyping.</br>
+        </div>
+      </div>
+
+			<div class="step" data-x="-10000" data-y="1600" data-z="2000" data-rotate-y="60" data-rotate-z="-90">
+        <div class="box">
+          <div style="background: rgba(255,255,255,.7); padding: 20px 0 20px 0;">
+            <img src="./images/cloudinary.png"/></div>
+            &#149; CDN hosted</br>
+            &#149; Dynamic transcoding</br>
+            &#149; Manipulation (crop, rotate, gravity, face recognition, etc)</br>
+            &#149; Filters (brightness, saturation, etc)</br>
+        </div>
+      </div>
+
+			<div class="step" data-x="-10000" data-y="2400" data-z="3000" data-rotate-y="60" data-rotate-z="-90">
+        <div class="box">
+          <div style="background: rgba(0,108,181,1); padding: 20px 0 20px 0;">
+            <img src="./images/parse.png"/></div>
+            &#149; Lots of awesomeness for native devs, little for us.</br>
+            &#149; Push notifications integrated with Trigger.io</br>
+        </div>
+      </div>
+
+			<div class="step" data-x="-10000" data-y="3600" data-z="-2000" data-rotate-y="60" data-rotate-z="-90">
+        <div class="box">
+          <div style="background: rgba(255,255,255,.7); padding: 20px 0 20px 0;">
+            <img src="./images/adobe.jpeg"/>
+            <img src="./images/shadow.jpeg"/></div>
+            &#149; Save->Refresh</br>
+            &#149; Did that iPad, iPhone, Android, Asus and WinPhone just update themselves?</br>
+        </div>
+      </div>
+
+			<div class="step" data-x="-10000" data-y="3600" data-z="-4000" data-rotate-y="60" data-rotate-z="-90" data-scale="0.5">
+        <div class="box">
+          <h1>Grape</h1>
+            &#149; 126 lines (+ some models)</br>
+            &#149; 50% more performant than Rails 3</br>
+            &#149; Easy versioning, subdomains, response formats and auth</br>
+            &#149; Global exception handling</br>
+        </div>
+      </div>
+
+			<div class="step" data-x="-10000" data-y="4800" data-z="-4400" data-rotate-y="60" data-rotate-z="-90" data-scale="0.5">
+        <div class="box">
+          <h1>Omniscience / Omnipresence</h1>
+            &#149; om·knee·presents: (n.) a service for authenticating a user against a variety of social services (eg. the Facebooks, the Tweeters, the Foursquares).</br>
+            &#149; omni·science: (n.) a service for reading all the social networking data for an authenticated user (cf. the Omnipresence service.)</br>
+        </div>
+      </div>
+
+			<div class="step" data-x="-10000" data-y="5800" data-z="-5400" data-rotate-y="60" data-rotate-z="-90" data-scale="0.5">
+        <div class="box">
+          <h1>Foreman / Guard</h1>
+            &#149; Start my shit</br>
+            &#149; Watch my shit and {block}</br>
+        </div>
+      </div>
+
+			<div class="step" data-x="-10000" data-y="3800" data-z="-10000" data-rotate-y="60" data-rotate-z="-90" data-scale="0.5">
+        <div class="box">
+          <h1>RSpec / Capybara / Jasmine / Jenkins</h1>
+            &#149; Yes. We test.</br>
+        </div>
+      </div>
+
+			<div class="step" data-x="-11000" data-y="3800" data-z="-9000" data-scale="1">
+        <div class="box">
+          <h1>Questions?</h1>
+        </div>
+      </div>
+
 		</div>
 		<script type="text/javascript" src="impress.js"></script>
 	</body>
